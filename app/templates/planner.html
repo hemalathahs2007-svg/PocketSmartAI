@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set title={"home":"Home Interior Planner","party":"Party Budget Planner","jewelry":"Jewelry Budget Planner"}[planner] %}
+{% block title %}{{title}}{% endblock %}
+{% block content %}<section class="head"><small>{{planner|upper}} PLANNER</small><h1>{{title}}</h1><p>Enter details and generate a budget-aware recommendation.</p></section>
+<div class="planner"><form id="plannerForm" class="card">
+<label>Budget (₹)</label><input id="budget" type="number" min="1" required>
+{% if planner=="home" %}
+<label>Rooms</label><div class="checks"><label><input type="checkbox" name="rooms" value="Living Room"> Living Room</label><label><input type="checkbox" name="rooms" value="Bedroom"> Bedroom</label><label><input type="checkbox" name="rooms" value="Kitchen"> Kitchen</label><label><input type="checkbox" name="rooms" value="Dining"> Dining</label></div>
+<label>Style</label><select id="style"><option>Modern</option><option>Minimal</option><option>Traditional</option><option>Contemporary</option></select>
+<label>Notes</label><textarea id="notes"></textarea>
+{% elif planner=="party" %}
+<label>Event type</label><input id="event_type" required placeholder="Birthday, wedding...">
+<label>Guests</label><input id="guests" type="number" min="1" required>
+<label>Venue</label><input id="venue">
+<label>Notes</label><textarea id="notes"></textarea>
+{% else %}
+<label>Occasion</label><input id="occasion" required placeholder="Wedding, festival...">
+<label>Style</label><select id="style"><option>Elegant</option><option>Minimal</option><option>Traditional</option><option>Festive</option></select>
+<label>Outfit image (optional)</label><input id="outfit" type="file" accept="image/jpeg,image/png,image/webp">
+<label>Notes</label><textarea id="notes"></textarea>
+{% endif %}
+<button class="btn">Generate Recommendation</button><p id="msg"></p></form>
+<section id="result" class="card"><p>Your result will appear here.</p></section></div>
+{% endblock %}
+{% block scripts %}<script>
+const planner="{{planner}}";
+plannerForm.onsubmit=async e=>{e.preventDefault();msg.textContent='Generating...';let r;
+if(planner==='home'){let rooms=[...document.querySelectorAll('[name=rooms]:checked')].map(x=>x.value);if(!rooms.length){msg.textContent='Select a room.';return;}r=await fetch('/api/generate-home',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({budget:+budget.value,rooms,style:style.value,notes:notes.value})});}
+else if(planner==='party'){r=await fetch('/api/generate-party',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({budget:+budget.value,guests:+guests.value,event_type:event_type.value,venue:venue.value,notes:notes.value})});}
+else{let f=new FormData();f.append('budget',budget.value);f.append('occasion',occasion.value);f.append('style',style.value);f.append('notes',notes.value);if(outfit.files[0])f.append('outfit',outfit.files[0]);r=await fetch('/api/generate-jewelry',{method:'POST',body:f});}
+let d=await r.json();if(!r.ok){msg.textContent=d.detail||'Request failed';return;}msg.textContent='';render(d);};
+function esc(x){return String(x??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}
+function money(x){return '₹'+Number(x||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function render(d){result.innerHTML='<h2>'+esc(d.summary)+'</h2><p>Budget: <b>'+money(d.budget)+'</b></p><h3>Allocation</h3>'+(d.allocation||[]).map(x=>'<div class="row">'+esc(x.category)+'<b>'+money(x.amount)+'</b></div>').join('')+'<h3>Recommendations</h3><div class="grid">'+(d.recommendations||[]).map(x=>'<div class="card"><small>'+esc(x.platform)+'</small><h3>'+esc(x.name)+'</h3><b>'+money(x.price)+'</b><p>'+esc(x.reason)+'</p></div>').join('')+'</div><h3>Tips</h3><ul>'+(d.tips||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><small>Source: '+esc(d.source)+'</small>'}
+</script>{% endblock %}

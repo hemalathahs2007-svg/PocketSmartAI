@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form class="form" id="registerForm">
+
+    <h1>Create account</h1>
+
+    <div id="error" class="error hidden"></div>
+
+    <div class="field">
+        <label>Name</label>
+        <input id="name" required minlength="2">
+    </div>
+
+    <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" required>
+    </div>
+
+    <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" required minlength="6">
+    </div>
+
+    <button class="btn" type="submit">Create Account</button>
+
+</form>
+
+<script>
+
+document.getElementById("registerForm").onsubmit = async function(e) {
+
+    e.preventDefault();
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+
+        const response = await fetch("/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            const message =
+                typeof data.detail === "string"
+                    ? data.detail
+                    : "Registration failed";
+
+            showError(message);
+            return;
+        }
+
+        window.location.href = "/dashboard";
+
+    } catch (error) {
+
+        showError("Something went wrong. Please try again.");
+
+    }
+
+};
+
+function showError(message) {
+
+    const errorBox = document.getElementById("error");
+
+    errorBox.textContent = message;
+    errorBox.classList.remove("hidden");
+
+}
+
+</script>
+
+{% endblock %}

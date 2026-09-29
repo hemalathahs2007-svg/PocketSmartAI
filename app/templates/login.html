@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}<section class="auth card"><small>WELCOME BACK</small><h1>Login</h1>
+<form id="loginForm"><label>Email</label><input id="email" type="email" required>
+<label>Password</label><input id="password" type="password" required>
+<button class="btn">Login</button><p id="msg"></p></form><p>New user? <a href="/register">Register</a></p></section>
+{% endblock %}
+{% block scripts %}<script>
+loginForm.onsubmit=async e=>{e.preventDefault();let r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email.value,password:password.value})});let d=await r.json();if(r.ok)location='/dashboard';else msg.textContent=d.detail||'Login failed';};
+</script>{% endblock %}

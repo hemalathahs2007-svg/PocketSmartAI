@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}<section class="head"><small>DASHBOARD</small><h1>Hi, {{user.name}} 👋</h1><p>Choose a planner.</p></section>
+<div class="grid">
+<a class="card" href="/planner/home"><h2>🏠 Home Interior</h2><p>Rooms, style and budget.</p></a>
+<a class="card" href="/planner/party"><h2>🎉 Party Planner</h2><p>Event, guests and budget.</p></a>
+<a class="card" href="/planner/jewelry"><h2>💎 Jewelry Planner</h2><p>Occasion, style, budget and optional outfit.</p></a>
+</div>
+<section><h2>Recent plans</h2>{% for x in history %}<div class="history"><b>{{x.planner|title}} Planner</b><span>₹{{"%.2f"|format(x.budget)}} · {{x.created_at.strftime("%d %b %Y")}}</span></div>{% else %}<div class="card">No recommendations yet.</div>{% endfor %}</section>
+{% endblock %}

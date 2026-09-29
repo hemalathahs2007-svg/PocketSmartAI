@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}<section class="head"><small>HISTORY</small><h1>Recommendation History</h1></section>
+{% for x in history %}<article class="card"><div class="history"><b>{{x.planner|title}} Planner #{{x.id}}</b><strong>₹{{"%.2f"|format(x.budget)}}</strong></div><details><summary>View result</summary><pre>{{x.result_json|tojson(indent=2)}}</pre></details></article>{% else %}<div class="card">No history yet.</div>{% endfor %}
+{% endblock %}
